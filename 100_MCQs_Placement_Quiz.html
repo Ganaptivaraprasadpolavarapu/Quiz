@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Placement Prep — 100 MCQs (DS, Algo, OS, Networks, DB, Pointers)</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8;--good:#16a34a;--bad:#dc2626}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:0;background:linear-gradient(135deg,#071021 0%,#0f1724 60%);color:#e6eef6}
+    .wrap{max-width:980px;margin:28px auto;padding:22px}
+    header{display:flex;align-items:center;gap:16px}
+    h1{margin:0;font-size:20px}
+    .meta{color:var(--muted);font-size:13px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:18px;border-radius:12px;margin-top:16px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:inherit;cursor:pointer}
+    .btn-primary{background:linear-gradient(90deg,var(--accent),#0ea5a4);border:0;color:#022;box-shadow:0 6px 14px rgba(6,182,212,0.12)}
+    .quiz-area{margin-top:18px}
+    .qnum{font-weight:600;color:var(--accent)}
+    .question{font-size:18px;margin:8px 0}
+    .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .opt{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+    .opt.disabled{opacity:0.6;cursor:default}
+    .opt.correct{outline:3px solid rgba(22,163,74,0.12);border-color:rgba(22,163,74,0.25);background:linear-gradient(90deg,rgba(22,163,74,0.06),transparent)}
+    .opt.wrong{outline:3px solid rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.2);background:linear-gradient(90deg,rgba(220,38,38,0.03),transparent)}
+    .explain{margin-top:12px;padding:12px;border-radius:8px;background:rgba(0,0,0,0.25);color:var(--muted);font-size:14px}
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+    .progress{color:var(--muted)}
+    .topic-filter{display:flex;gap:6px;flex-wrap:wrap}
+    .small{font-size:13px;color:var(--muted)}
+    .stats{font-size:13px;color:var(--muted)}
+    @media(max-width:640px){.opts{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Placement Prep — 100 MCQs</h1>
+        <div class="meta">Topics: Data Structures, Algorithms, Time Complexity, OS, Networks, DB, Pointers. Language: Java (C++ if applicable)</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="controls">
+        <div class="topic-filter" id="topicFilter"></div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button id="prevBtn">◀ Prev</button>
+          <button id="nextBtn" class="btn-primary">Next ▶</button>
+          <button id="shuffleBtn">Shuffle</button>
+          <button id="resetBtn">Reset</button>
+        </div>
+      </div>
+
+      <div class="quiz-area" id="quizArea">
+        <!-- filled by JS -->
+      </div>
+
+      <div class="footer">
+        <div class="progress" id="progress"></div>
+        <div class="stats" id="stats"></div>
+      </div>
+    </div>
+
+    <div class="small" style="margin-top:10px">How to use: Click an option to reveal the correct answer and a short explanation. Use filters to focus on topics. Good luck!</div>
+  </div>
+
+<script>
+// Questions array: 100 questions across topics. Each object: {id,topic,question,options:[...],answer:'A',explain:'...'}
+const QUESTIONS = [
+  {id:1,topic:'Data Structures',question:'Which data structure uses FIFO (First-In-First-Out) order?',options:['Stack','Queue','Tree','HashMap'],answer:'B',explain:'Queue follows FIFO: elements are removed in the same order they were added.'},
+  {id:2,topic:'Data Structures',question:'What is the time complexity to access an element by index in an ArrayList (Java)?',options:['O(1)','O(log n)','O(n)','O(n log n)'],answer:'A',explain:'ArrayList is backed by an array; accessing by index is O(1).'},
+  {id:3,topic:'Data Structures',question:'Which of the following is NOT a binary tree property?',options:['Each node has at most two children','In-order traversal visits left-root-right','Height of a node is number of edges on longest path to a leaf','All leaves have the same depth'],answer:'D',explain:'Not all binary trees have leaves at the same depth — that is only for perfect/complete trees.'},
+  {id:4,topic:'Algorithms',question:'Which algorithm is typically used to find the shortest paths from a single source in a graph with non-negative weights?',options:['Bellman-Ford','Dijkstra','Floyd-Warshall','Prim'],answer:'B',explain:"Dijkstra's algorithm finds shortest paths in graphs with non-negative weights efficiently."},
+  {id:5,topic:'Algorithms',question:'What is the average-case complexity of quicksort?',options:['O(n^2)','O(n log n)','O(n)','O(log n)'],answer:'B',explain:'Quicksort has average-case complexity O(n log n); worst-case O(n^2) without randomization.'},
+  {id:6,topic:'Time Complexity',question:'If a function makes two recursive calls of half the size of input (T(n)=2T(n/2)+n), what is its complexity?',options:['O(n)','O(n log n)','O(n^2)','O(log n)'],answer:'B',explain:'By Master theorem, a=2, b=2 -> n^{log_b a}=n; f(n)=n => complexity O(n log n).'},
+  {id:7,topic:'Operating Systems',question:'What is the purpose of a process scheduler?',options:['Manage memory allocation','Schedule processes to CPU','Handle disk I/O','Provide user interface'],answer:'B',explain:'Process scheduler decides which process runs on the CPU and for how long.'},
+  {id:8,topic:'Computer Networks',question:'Which layer of the OSI model is responsible for end-to-end communication and reliability?',options:['Physical','Network','Transport','Session'],answer:'C',explain:'Transport layer (e.g., TCP) provides end-to-end communication and reliability.'},
+  {id:9,topic:'Databases',question:'Which SQL statement is used to remove all records from a table but keep its structure?',options:['DROP','DELETE','TRUNCATE','REMOVE'],answer:'C',explain:'TRUNCATE removes all rows quickly but keeps table schema; it is DDL in many DBs.'},
+  {id:10,topic:'Pointers',question:'In Java, what is the equivalent concept to pointers in C/C++?',options:['References','Pointers','Handles','There is no equivalent'],answer:'A',explain:'Java uses references (no pointer arithmetic). They refer to objects but don\'t expose memory addresses.'},
+  {id:11,topic:'Data Structures',question:'Which data structure is best suited for LRU cache implementation?',options:['Stack','Queue','HashMap + Doubly Linked List','Binary Tree'],answer:'C',explain:'HashMap for O(1) lookup and doubly linked list for O(1) updates to order.'},
+  {id:12,topic:'Algorithms',question:'Which sorting algorithm is stable and has worst-case O(n log n) time?',options:['QuickSort','HeapSort','MergeSort','SelectionSort'],answer:'C',explain:'Merge Sort is stable and guarantees O(n log n) time complexity.'},
+  {id:13,topic:'Time Complexity',question:'What is the time complexity of binary search on a sorted array of n elements?',options:['O(n)','O(log n)','O(sqrt(n))','O(1)'],answer:'B',explain:'Binary search halves the search space each time → O(log n).'},
+  {id:14,topic:'Operating Systems',question:'Which of these is NOT a scheduling algorithm?',options:['Round Robin','Shortest Job Next','Longest Remaining Time','Multilevel Queue'],answer:'C',explain:'"Longest Remaining Time" is not a standard name; usually there is Longest Job First but not this term.'},
+  {id:15,topic:'Computer Networks',question:'What does DHCP provide to clients?',options:['IP addresses','Domain names','Encryption keys','Routing tables'],answer:'A',explain:'DHCP assigns IP addresses and network configuration to clients automatically.'},
+  {id:16,topic:'Databases',question:'What is a primary key?',options:['A key that can be NULL','A unique identifier for table rows','An index type','A foreign key alias'],answer:'B',explain:'Primary key uniquely identifies each row and cannot be NULL.'},
+  {id:17,topic:'Pointers',question:'In C++, what does the expression *ptr do when ptr is a pointer?',options:['Gives the address of ptr','Dereferences ptr to access value','Creates a pointer','Deletes memory'],answer:'B',explain:'*ptr accesses (dereferences) the value stored at the address ptr holds.'},
+  {id:18,topic:'Data Structures',question:'Which structure helps implement efficient priority queues?',options:['ArrayList','Stack','Binary Heap','Linked List'],answer:'C',explain:'Binary heap supports O(log n) insert and delete-min, used in priority queues.'},
+  {id:19,topic:'Algorithms',question:'Which algorithm is used for minimum spanning tree in dense graphs efficiently?',options:['Kruskal','Prim','Dijkstra','Bellman-Ford'],answer:'B',explain:'Prim\'s algorithm is efficient with adjacency matrix/dense graphs; complexity depends on implementation.'},
+  {id:20,topic:'Time Complexity',question:'What is amortized time complexity for push operation in dynamic array when doubling strategy used?',options:['O(1)','O(log n)','O(n)','O(n log n)'],answer:'A',explain:'Amortized cost of push with doubling is O(1) though some pushes cost O(n).'},
+  {id:21,topic:'Operating Systems',question:'What is a race condition?',options:['When two processes wait forever','When processes produce inconsistent results due to unsynchronized access','When CPU is idle','When disk is full'],answer:'B',explain:'Race occurs when multiple threads/processes access shared data without proper synchronization, leading to incorrect behavior.'},
+  {id:22,topic:'Computer Networks',question:'Which protocol is connection-oriented and reliable?',options:['UDP','IP','TCP','ICMP'],answer:'C',explain:'TCP provides connection-oriented, reliable byte-stream service with flow and congestion control.'},
+  {id:23,topic:'Databases',question:'What is normalization?',options:['Combining tables','Breaking tables to reduce redundancy','Index optimization','Backing up data'],answer:'B',explain:'Normalization organizes data to minimize redundancy and dependency issues.'},
+  {id:24,topic:'Pointers',question:'Which C++ operator obtains the memory address of a variable?',options:['*','&','->','%'],answer:'B',explain:'The & operator returns the address of a variable (e.g., &x).'},
+  {id:25,topic:'Data Structures',question:'Which traversal of binary tree yields nodes in non-decreasing order for BST?',options:['Pre-order','In-order','Post-order','Level-order'],answer:'B',explain:'In-order traversal of BST visits nodes in sorted (non-decreasing) order.'},
+  {id:26,topic:'Algorithms',question:'Which technique is used in dynamic programming?',options:['Greedy choice','Divide and conquer','Overlapping subproblems and optimal substructure','Backtracking only'],answer:'C',explain:'DP solves problems by combining solutions of overlapping subproblems and using optimal substructure.'},
+  {id:27,topic:'Time Complexity',question:'If an algorithm has complexity O(2^n), which of the following is true as n grows?',options:['It scales well','It is exponential and becomes infeasible quickly','It is polynomial','It is logarithmic'],answer:'B',explain:'O(2^n) grows exponentially and quickly becomes impractical as n increases.'},
+  {id:28,topic:'Operating Systems',question:'What does virtual memory enable?',options:['Multiple users on a single CPU','Programs to use more memory than physically available','Faster CPU clock','Persistent storage'],answer:'B',explain:'Virtual memory uses disk space to extend apparent RAM, allowing programs to exceed physical memory.'},
+  {id:29,topic:'Computer Networks',question:'What is the purpose of DNS?',options:['Translate domain names to IP addresses','Provide secure tunnels','Route packets','Manage MAC addresses'],answer:'A',explain:'DNS maps human-readable domain names to IP addresses for locating services on networks.'},
+  {id:30,topic:'Databases',question:'What is an index in a database?',options:['A backup file','A way to improve query speed by creating a lookup structure','A type of view','A stored procedure'],answer:'B',explain:'Indexes speed up queries by providing quick lookup capabilities, similar to an index in a book.'},
+  {id:31,topic:'Pointers',question:'In C, which of the following is true about NULL pointer?',options:['It points to address 0 and should not be dereferenced','It points to a valid memory','It is same as uninitialized pointer','It is used to perform pointer arithmetic'],answer:'A',explain:'NULL is a sentinel value (often 0) indicating the pointer points to no valid object and must not be dereferenced.'},
+  {id:32,topic:'Data Structures',question:'Which data structure supports fast lookup, insertion and deletion in average-case O(1)?',options:['Array','Binary Search Tree','Hash Table','Linked List'],answer:'C',explain:'Hash tables (HashMap) provide average-case O(1) operations with good hashing and low collisions.'},
+  {id:33,topic:'Algorithms',question:'Which algorithmic paradigm does Merge Sort follow?',options:['Dynamic Programming','Divide and Conquer','Greedy','Backtracking'],answer:'B',explain:'Merge Sort divides the array, sorts halves, and merges — classic divide and conquer.'},
+  {id:34,topic:'Time Complexity',question:'Which is faster as n -> large: O(n) or O(n log n)?',options:['O(n)','O(n log n)','They are same','Depends on constants'],answer:'A',explain:'O(n) grows slower than O(n log n) for large n; constants aside, O(n) is asymptotically faster.'},
+  {id:35,topic:'Operating Systems',question:'Which IPC (Inter-Process Communication) mechanism is typically used for unrelated processes on the same machine?',options:['Signals','Pipes','Shared Memory / Sockets','Global variables'],answer:'C',explain:'Shared memory, sockets, or files may be used; pipes usually for related processes; sockets work for unrelated processes too.'},
+  {id:36,topic:'Computer Networks',question:'What is the main advantage of UDP over TCP?',options:['Reliability','Ordering','Low overhead and lower latency','Flow control'],answer:'C',explain:'UDP is connectionless with lower overhead and latency; suitable for real-time applications where some loss is acceptable.'},
+  {id:37,topic:'Databases',question:'Which SQL clause is used to group rows that have the same values?',options:['WHERE','GROUP BY','ORDER BY','HAVING'],answer:'B',explain:'GROUP BY groups rows by specified columns; HAVING filters grouped results.'},
+  {id:38,topic:'Pointers',question:'Which of these is invalid in Java?',options:['int[] arr = new int[5];','Integer x = null;','int *p;','String s = null;'],answer:'C',explain:'Java doesn\'t have pointer syntax like int *p; instead it has references.'},
+  {id:39,topic:'Data Structures',question:'Which is best for implementing associative arrays (key-value)?',options:['Binary Heap','HashMap','Stack','Queue'],answer:'B',explain:'HashMap/Hash Table is the standard choice for associative arrays offering O(1) average lookup.'},
+  {id:40,topic:'Algorithms',question:'What is the purpose of memoization?',options:['Save memory','Avoid recomputation by caching results','Sort items','Encrypt data'],answer:'B',explain:'Memoization caches previously computed results to avoid duplicate work in recursive algorithms.'},
+  {id:41,topic:'Time Complexity',question:'What is the time complexity of inserting into a min-heap?',options:['O(1)','O(log n)','O(n)','O(n log n)'],answer:'B',explain:'Insert requires sifting up which takes O(log n) in heap of size n.'},
+  {id:42,topic:'Operating Systems',question:'What is thrashing in OS?',options:['When CPU is overloaded due to too many interrupts','When system spends most time swapping pages and little useful work','When disk is corrupted','When network is congested'],answer:'B',explain:'Thrashing occurs when excessive paging reduces system performance — CPU spends time swapping rather than executing processes.'},
+  {id:43,topic:'Computer Networks',question:'Which of the following is used by HTTP to identify resources?',options:['IP address','URL/URI','MAC address','Port number only'],answer:'B',explain:'URL/URI identifies resources on the web; HTTP uses it to request resources.'},
+  {id:44,topic:'Databases',question:'What is ACID property in databases? (pick the correct expansion)',options:['Atomicity, Consistency, Isolation, Durability','Availability, Consistency, Integrity, Durability','Atomicity, Consistency, Integrity, Durability','Authorization, Consistency, Isolation, Durability'],answer:'A',explain:'ACID stands for Atomicity, Consistency, Isolation, Durability — key properties for transactional databases.'},
+  {id:45,topic:'Pointers',question:'In C++, what is the result of pointer arithmetic p+1 when p is int*?',options:['Moves by 1 byte','Moves by size of int bytes','Compiles error','Moves to beginning of memory'],answer:'B',explain:'Pointer arithmetic advances by sizeof(pointed_type); for int* it advances by sizeof(int) bytes.'},
+  {id:46,topic:'Data Structures',question:'Which traversal is best for breadth-first search?',options:['Pre-order','In-order','Post-order','Level-order'],answer:'D',explain:'Level-order traversal visits nodes by levels — exactly what BFS does.'},
+  {id:47,topic:'Algorithms',question:'Which of the following is NOT greedy-friendly?',options:['Fractional knapsack','Huffman coding','0/1 knapsack','Dijkstra (with non-negative weights)'],answer:'C',explain:'0/1 knapsack cannot be solved optimally by greedy approach; it requires DP.'},
+  {id:48,topic:'Time Complexity',question:'Which complexity is better for very large inputs: O(n log n) or O(n^2)?',options:['O(n log n)','O(n^2)','They are same','O(n^2) if constants small'],answer:'A',explain:'O(n log n) grows slower and is better than O(n^2) for large n.'},
+  {id:49,topic:'Operating Systems',question:'Which of the following is a mutual exclusion mechanism?',options:['Semaphore','Pointer','Array','HashMap'],answer:'A',explain:'Semaphores (and mutexes) provide mutual exclusion to protect critical sections.'},
+  {id:50,topic:'Computer Networks',question:'Which device operates at the Data Link layer to forward frames?',options:['Router','Switch','Hub','Gateway'],answer:'B',explain:'Switches forward frames based on MAC addresses at the Data Link layer (Layer 2).'},
+  {id:51,topic:'Databases',question:'Which join returns only matching rows from both tables?',options:['LEFT JOIN','RIGHT JOIN','INNER JOIN','FULL OUTER JOIN'],answer:'C',explain:'INNER JOIN returns rows where the join condition matches in both tables.'},
+  {id:52,topic:'Pointers',question:'Which of these is safest in C++ to avoid dangling pointer?',options:['Use raw new/delete','Use smart pointers (unique_ptr/shared_ptr)','Use global variables','Do pointer arithmetic'],answer:'B',explain:'Smart pointers manage lifetime and reduce dangling pointer risk by automatic deallocation.'},
+  {id:53,topic:'Data Structures',question:'What is the worst-case height of a Binary Search Tree (BST) with n nodes?',options:['O(log n)','O(n)','O(1)','O(n log n)'],answer:'B',explain:'In worst case (insertion in sorted order) BST degrades to a linked list → height O(n).'},
+  {id:54,topic:'Algorithms',question:'Which algorithm finds strongly connected components in directed graphs?',options:['Kruskal','Kosaraju','Dijkstra','Prim'],answer:'B',explain:'Kosaraju (and Tarjan) algorithms are used to find strongly connected components.'},
+  {id:55,topic:'Time Complexity',question:'If T(n)=T(n-1)+O(1), what is complexity?',options:['O(n)','O(log n)','O(n log n)','O(2^n)'],answer:'A',explain:'Recurrence yields O(n) since each call does constant extra work.'},
+  {id:56,topic:'Operating Systems',question:'Which memory allocation strategy may cause external fragmentation?',options:['Paging','Segmentation','Both','None'],answer:'B',explain:'Segmentation allocates variable-sized segments and can suffer external fragmentation; paging avoids it by fixed-size pages.'},
+  {id:57,topic:'Computer Networks',question:'Which protocol uses port 53 by default?',options:['HTTP','FTP','DNS','SSH'],answer:'C',explain:'DNS typically uses port 53 for queries/responses (UDP/TCP).'},
+  {id:58,topic:'Databases',question:'What is a foreign key?',options:['A key used to encrypt data','A unique identifier','A reference to primary key of another table','A backup key'],answer:'C',explain:'Foreign key enforces referential integrity by referencing primary key of another table.'},
+  {id:59,topic:'Pointers',question:'Which of the following can cause undefined behavior in C/C++?',options:['Dereferencing NULL pointer','Using references','Calling functions','Assigning integers'],answer:'A',explain:'Dereferencing NULL leads to undefined behavior (typically crash).'},
+  {id:60,topic:'Data Structures',question:'What is the advantage of AVL tree over simple BST?',options:['AVL tree is simpler','AVL tree is balanced → guarantees O(log n) operations','AVL tree uses less memory','AVL tree is slower'],answer:'B',explain:'AVL is a self-balancing BST ensuring height O(log n) → operations guaranteed logarithmic.'},
+  {id:61,topic:'Algorithms',question:'Which search algorithm is optimal for unweighted graphs to find shortest path (fewest edges)?',options:['Dijkstra','BFS','DFS','A*'],answer:'B',explain:'BFS finds shortest path in terms of edges in unweighted graphs.'},
+  {id:62,topic:'Time Complexity',question:'Which notation gives an upper bound on running time?',options:['Big O','Big Omega','Theta','Little o'],answer:'A',explain:'Big O describes an asymptotic upper bound on growth of a function.'},
+  {id:63,topic:'Operating Systems',question:'What is a context switch?',options:['Switching from one CPU to another','Saving and loading process state to switch CPU from one process/thread to another','Switching disk partitions','Switching network interfaces'],answer:'B',explain:'Context switch saves the CPU registers/state of current process and loads another process\'s state.'},
+  {id:64,topic:'Computer Networks',question:'Which layer provides logical addressing to route packets across networks?',options:['Data Link','Transport','Network','Application'],answer:'C',explain:'Network layer (e.g., IP) handles logical addressing (IP addresses) and routing across networks.'},
+  {id:65,topic:'Databases',question:'Which SQL keyword is used to ensure uniqueness of column values?',options:['UNIQUE','DISTINCT','PRIMARY','CHECK'],answer:'A',explain:'UNIQUE constraint ensures all values in a column (or combination) are unique.'},
+  {id:66,topic:'Pointers',question:'In C, what is sizeof(pointer) typically?',options:['Size of pointed data','Depends on architecture (e.g., 4 or 8 bytes)','Zero','Always 1'],answer:'B',explain:'Size of a pointer depends on architecture (32-bit → 4 bytes, 64-bit → 8 bytes) regardless of pointed type.'},
+  {id:67,topic:'Data Structures',question:'Which operation is expensive for singly linked list compared to array?',options:['Insert at head','Insert at tail (if no tail pointer)','Access by index','Delete given node (if pointer known)'],answer:'C',explain:'Access by index in singly linked list is O(n) while arrays have O(1) indexed access.'},
+  {id:68,topic:'Algorithms',question:'Which is used to detect cycle in a linked list in O(n) time and O(1) space?',options:['HashMap storing nodes','Floyd\'s tortoise and hare','Recursion','Sorting list'],answer:'B',explain:'Floyd\'s cycle-finding algorithm uses two pointers moving at different speeds to detect cycles.'},
+  {id:69,topic:'Time Complexity',question:'Which function grows faster as n→∞: n! or 2^n?',options:['n!','2^n','They grow same','Depends on n'],answer:'A',explain:'Factorial grows faster than exponential 2^n for large n.'},
+  {id:70,topic:'Operating Systems',question:'Which of the following is NOT part of process state?',options:['Running','Ready','Blocked','Archived'],answer:'D',explain:'Typical process states are new, ready, running, blocked, terminated. Archived is not a standard runtime state.'},
+  {id:71,topic:'Computer Networks',question:'What is MTU (Maximum Transmission Unit)?',options:['Max memory for unit','Maximum packet size that can be transmitted over a network medium','Maximum throughput','Minimum transfer unit'],answer:'B',explain:'MTU defines largest packet/frame size that can be transmitted without fragmentation.'},
+  {id:72,topic:'Databases',question:'Which normalization form eliminates partial dependency?',options:['1NF','2NF','3NF','BCNF'],answer:'B',explain:'Second Normal Form (2NF) removes partial dependencies on part of a composite primary key.'},
+  {id:73,topic:'Pointers',question:'What does smart pointer shared_ptr do in C++?',options:['Prevents all memory leaks','Allows multiple owners; cleans up when last owner destroyed','Is faster than raw pointer','Cannot be copied'],answer:'B',explain:'shared_ptr uses reference counting so memory is freed when last shared_ptr goes out of scope.'},
+  {id:74,topic:'Data Structures',question:'Which container allows duplicate keys and keeps them ordered (in C++ STL)?',options:['map','unordered_map','multimap','set'],answer:'C',explain:'multimap allows duplicate keys and is ordered by key (usually implemented as red-black tree).'},
+  {id:75,topic:'Algorithms',question:'A* search algorithm uses which of the following?',options:['Heuristic function','Only path cost','Random choice','Sorting'] ,answer:'A',explain:'A* combines path cost g(n) and heuristic h(n) to guide search optimally if heuristic is admissible.'},
+  {id:76,topic:'Time Complexity',question:'What is the time complexity of accessing an element in a balanced BST?',options:['O(1)','O(log n)','O(n)','O(n log n)'],answer:'B',explain:'Balanced BST (AVL, Red-Black) guarantees O(log n) for search/insert/delete.'},
+  {id:77,topic:'Operating Systems',question:'What is paging?',options:['Dividing memory into variable segments','Dividing memory into fixed-size blocks called pages','A file system operation','A network protocol'],answer:'B',explain:'Paging splits memory into equal-sized pages to avoid external fragmentation and simplify allocation.'},
+  {id:78,topic:'Computer Networks',question:'Which of these is a transport-layer protocol?',options:['IP','Ethernet','TCP','ARP'],answer:'C',explain:'TCP operates at transport layer, providing reliable end-to-end transport.'},
+  {id:79,topic:'Databases',question:'Which of the following ensures transactions are durable?',options:['Writing logs to stable storage','Keeping everything in memory','Using only SELECT statements','Disabling indexes'],answer:'A',explain:'Durability requires committing transaction data to stable storage (e.g., transaction logs) so it survives crashes.'},
+  {id:80,topic:'Pointers',question:'Which C++ operator is used to access member of object through pointer?',options:['.','->','*','&'],answer:'B',explain:'The -> operator accesses members of the object pointed to by a pointer (e.g., p->x).'},
+  {id:81,topic:'Data Structures',question:'What is the main advantage of using a trie (prefix tree)?',options:['Memory efficiency for all cases','Fast prefix searches and autocompletion','Simpler to implement than hash table','Works only for numbers'],answer:'B',explain:'Tries are optimized for prefix queries and string retrievals like autocomplete.'},
+  {id:82,topic:'Algorithms',question:'Which sorting algorithm is in-place and has worst-case O(n log n)?',options:['Merge Sort','Quick Sort (with naive pivot)','Heap Sort','Bubble Sort'],answer:'C',explain:'Heap sort is in-place and has worst-case O(n log n); merge sort isn\'t in-place by standard implementation.'},
+  {id:83,topic:'Time Complexity',question:'If an algorithm does nested loops each from 1..n, what is complexity?',options:['O(n)','O(n log n)','O(n^2)','O(2^n)'],answer:'C',explain:'Two nested loops each up to n produce O(n^2) time.'},
+  {id:84,topic:'Operating Systems',question:'Which file system operation is typically atomic?',options:['Write of a small file','Append?','Rename/move within same filesystem','Changing permissions'],answer:'C',explain:'Rename/move within same filesystem is usually atomic; other operations may not be.'},
+  {id:85,topic:'Computer Networks',question:'What is three-way handshake used for?',options:['Encrypt connection','Establish TCP connection reliably','Terminate TCP connection','Discover routes'],answer:'B',explain:'TCP uses three-way handshake (SYN, SYN-ACK, ACK) to establish a reliable connection.'},
+  {id:86,topic:'Databases',question:'What is an index scan?',options:['Backing up index','Reading table sequentially ignoring index','Using index to locate rows quickly','Dropping an index'],answer:'C',explain:'Index scan uses index structure to locate matching rows faster than full table scan in many cases.'},
+  {id:87,topic:'Pointers',question:'Which of the following can cause memory leak in C++?',options:['Not freeing memory allocated with new','Using smart pointers correctly','Deleting twice','Setting pointer to NULL after delete'],answer:'A',explain:'Failing to delete memory allocated with new (or not using smart pointers) leads to memory leaks.'},
+  {id:88,topic:'Data Structures',question:'Which is best data structure to implement undo functionality?',options:['Queue','Stack','Heap','HashMap'],answer:'B',explain:'Undo is naturally modeled by stack (LIFO): last action undone first.'},
+  {id:89,topic:'Algorithms',question:'Which problem class does subset sum belong to?',options:['P (polynomial)','NP-Complete','NL','BPP'],answer:'B',explain:'Subset sum is NP-Complete; it is in NP and believed not solvable in polynomial time in general.'},
+  {id:90,topic:'Time Complexity',question:'If f(n)=3n^2+2n+1, which term dominates asymptotically?',options:['3n^2','2n','1','All same'],answer:'A',explain:'Highest-order term (n^2) dominates; constants are ignored in Big-O.'},
+  {id:91,topic:'Operating Systems',question:'Which is true about kernel mode vs user mode?',options:['Kernel mode has fewer privileges than user mode','Kernel mode has full hardware access and more privileges','They are same','User mode has direct hardware access'],answer:'B',explain:'Kernel mode runs with full privileges and can perform privileged operations; user mode is restricted.'},
+  {id:92,topic:'Computer Networks',question:'Which is true about TCP flow control?',options:['It prevents network congestion globally','It provides sender-side pacing only','It prevents sender from overwhelming receiver using windowing','It encrypts data'],answer:'C',explain:'TCP flow control uses window size to ensure sender does not overflow receiver buffers.'},
+  {id:93,topic:'Databases',question:'Which command changes the structure of a table (e.g., add column)?',options:['INSERT','UPDATE','ALTER','MODIFY'],answer:'C',explain:'ALTER TABLE modifies table schema like adding/dropping columns.'},
+  {id:94,topic:'Pointers',question:'Which is true for references in C++ (T&)?',options:['They can be reseated to refer to another object','They must be initialized and cannot be changed to refer to another object','They are same as pointers','They can be NULL'],answer:'B',explain:'References must be initialized at creation and cannot be reseated; they cannot be NULL (unless using workaround).'},
+  {id:95,topic:'Data Structures',question:'Which data structure ensures O(1) time for push/pop and supports LIFO?',options:['Queue','Stack','Binary Tree','HashMap'],answer:'B',explain:'Stack supports LIFO with O(1) push/pop operations.'},
+  {id:96,topic:'Algorithms',question:'Which algorithm is used for topological sorting of a DAG?',options:['Dijkstra','Kahn\'s algorithm or DFS-based','Prim','Bellman-Ford'],answer:'B',explain:'Topological sort can be done via Kahn\'s algorithm (in-degree) or DFS postorder.'},
+  {id:97,topic:'Time Complexity',question:'Which of the following is true about Theta notation?',options:['It gives a tight bound (both upper and lower)','It is only lower bound','It is only upper bound','It is approximate and not formal'],answer:'A',explain:'Theta gives tight bound meaning the function grows both at least and at most as indicated asymptotically.'},
+  {id:98,topic:'Operating Systems',question:'Which security mechanism isolates processes from each other?',options:['Virtual memory and access controls','Using global variables','Using only one user','Disabling interrupts'],answer:'A',explain:'Virtual memory provides address space isolation and access controls enforce permissions between processes.'},
+  {id:99,topic:'Computer Networks',question:'Which protocol provides reliable file transfer over the internet?',options:['FTP over TCP','TFTP over UDP','ICMP','SMTP'],answer:'A',explain:'FTP typically runs over TCP which provides reliability; TFTP uses UDP and is less reliable.'},
+  {id:100,topic:'Databases',question:'What is denormalization?',options:['Breaking tables further','Combining tables/adding redundancy to speed reads','Encrypting data','Normalizing again'],answer:'B',explain:'Denormalization intentionally introduces redundancy to reduce joins and improve read performance.'}
+];
+
+let filtered = [...QUESTIONS];
+let index = 0;
+let userAnswers = {};
+let topics = Array.from(new Set(QUESTIONS.map(q=>q.topic)));
+
+function renderTopicFilters(){
+  const container = document.getElementById('topicFilter');
+  container.innerHTML='';
+  const allBtn = document.createElement('button');
+  allBtn.textContent='All';
+  allBtn.onclick=()=>{filtered=[...QUESTIONS]; index=0; render();}
+  container.appendChild(allBtn);
+  topics.forEach(t=>{
+    const b=document.createElement('button'); b.textContent=t; b.onclick=()=>{filtered=QUESTIONS.filter(q=>q.topic===t); index=0; render();}; container.appendChild(b);
+  });
+}
+
+function render(){
+  const q = filtered[index];
+  const area = document.getElementById('quizArea');
+  if(!q){ area.innerHTML='<div class="question">No question found for this filter.</div>'; updateProgress(); return; }
+  area.innerHTML = `\n    <div class="qnum">Question ${index+1} of ${filtered.length} <span class="small">(Global ID: ${q.id})</span></div>\n    <div class="question">${escapeHtml(q.question)}</div>\n    <div class="opts" id="opts"></div>\n    <div id="explain"></div>\n  `;
+  const opts = document.getElementById('opts');
+  const letters=['A','B','C','D'];
+  q.options.forEach((opt,i)=>{
+    const d = document.createElement('div'); d.className='opt'; d.dataset.letter=letters[i]; d.innerHTML=`<strong>${letters[i]}.</strong> ${escapeHtml(opt)}`;
+    d.onclick = ()=>selectOption(d,q);
+    opts.appendChild(d);
+  });
+  updateProgress(); updateStats();
+  highlightAnswered();
+}
+
+function selectOption(elem,q){
+  if(elem.classList.contains('disabled')) return;
+  const chosen = elem.dataset.letter;
+  userAnswers[q.id]=chosen;
+  // disable all
+  document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
+  // mark correct/incorrect
+  document.querySelectorAll('.opt').forEach(o=>{
+    if(o.dataset.letter===q.answer) o.classList.add('correct');
+    if(o.dataset.letter===chosen && chosen!==q.answer) o.classList.add('wrong');
+  });
+  // show explanation
+  const ex = document.getElementById('explain');
+  ex.className='explain';
+  ex.innerHTML = `<strong>Answer: ${q.answer}</strong> — ${escapeHtml(q.options[['A','B','C','D'].indexOf(q.answer)])}<br/><br/>${escapeHtml(q.explain)}`;
+  updateStats();
+}
+
+function highlightAnswered(){
+  const q = filtered[index];
+  if(userAnswers[q.id]){
+    const chosen = userAnswers[q.id];
+    document.querySelectorAll('.opt').forEach(o=>{
+      if(o.dataset.letter===q.answer) o.classList.add('correct');
+      if(o.dataset.letter===chosen && chosen!==q.answer) o.classList.add('wrong');
+      o.classList.add('disabled');
+    });
+    const ex = document.getElementById('explain');
+    ex.className='explain';
+    ex.innerHTML = `<strong>Answer: ${q.answer}</strong> — ${escapeHtml(q.options[['A','B','C','D'].indexOf(q.answer)])}<br/><br/>${escapeHtml(q.explain)}`;
+  }
+}
+
+function prev(){ if(index>0){ index--; render(); } }
+function next(){ if(index<filtered.length-1){ index++; render(); } }
+
+function shuffle(){ filtered = shuffleArray(filtered); index=0; userAnswers={}; render(); }
+function resetAll(){ filtered=[...QUESTIONS]; index=0; userAnswers={}; render(); }
+
+function updateProgress(){
+  const p = document.getElementById('progress');
+  p.textContent = `Q ${index+1} / ${filtered.length} (${filtered[index]?filtered[index].topic:''})`;
+}
+
+function updateStats(){
+  const s = document.getElementById('stats');
+  const answered = Object.keys(userAnswers).length;
+  // compute corrects
+  let correct=0; for(const id of Object.keys(userAnswers)){ const uu = userAnswers[id]; const q = QUESTIONS.find(x=>x.id==id); if(q && q.answer===uu) correct++; }
+  s.textContent = `Answered: ${answered} | Correct: ${correct}`;
+}
+
+function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function shuffleArray(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]];} return b; }
+
+// attach buttons
+document.getElementById('prevBtn').onclick=prev; document.getElementById('nextBtn').onclick=next; document.getElementById('shuffleBtn').onclick=shuffle; document.getElementById('resetBtn').onclick=resetAll;
+
+renderTopicFilters(); render();
+</script>
+</body>
+</html>
